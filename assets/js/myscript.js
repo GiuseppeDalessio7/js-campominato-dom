@@ -1,6 +1,9 @@
 const formDomEl = document.querySelector('form')
 const fieldDomEl = document.querySelector('.field')
 let bombs = [];
+let gameActive = true;
+let score = 0;
+
 
 formDomEl.addEventListener('submit', function (ev) {
 
@@ -58,7 +61,7 @@ function generateBattleField(limit, fieldDomEl) {
  */
 function generateCell(numb, el, css_class, limit) {
 
-  
+
   // generate the field cell
   //Ogni cella ha un numero progressivo, da 1 a 100.
   const cellMarkupEl = document.createElement(el)
@@ -67,23 +70,22 @@ function generateCell(numb, el, css_class, limit) {
   cellMarkupEl.style.width = `calc(100% / ${Math.sqrt(limit)})`
 
   //Quando l'utente clicca su ogni cella, la cella cliccata si colora di azzurro ed emetto un messaggio in console con il numero della cella cliccata.
-  cellMarkupEl.addEventListener('click', function(ev){
-   
-    if (bombs.includes(numb)){
-      
-      this.classList.toggle('bg-red');
-      
 
-    } else 
-    {
-      this.classList.toggle('bg-blue');
+
+  cellMarkupEl.addEventListener('click', function(ev) {
+    if (gameActive) {
+      if (bombs.includes(numb)) {
+        this.classList.add('bg-red');
+        endGame(false); // Hai perso
+      } else {
+        this.classList.add('bg-blue');
+        score++;
+        updateScore(); // Aggiorna il punteggio
+        checkWin();
+      }
     }
-    
-    
-    
-  })
+  });
 
- 
 
   return cellMarkupEl
 
@@ -100,6 +102,40 @@ function generateBombs(limit) {
     }
   }
 }
+
+
+//
+
+function endGame(isWin) {
+  gameActive = false;
+  if (isWin) {
+    alert('Hai vinto!');
+  } else {
+    alert('Hai perso! Clicca su "Rigioca" per iniziare una nuova partita.');
+  }
+}
+
+
+
+function checkWin() {
+  const allCells = document.querySelectorAll('.cell');
+  const unclickedCells = Array.from(allCells).filter((cell) => {
+    return !cell.classList.contains('bg-blue') && !cell.classList.contains('bg-red');
+  });
+
+  if (unclickedCells.length === bombs.length) {
+    endGame(true); // Hai vinto
+  }
+}
+
+function updateScore() {
+  const scoreElement = document.getElementById('score'); 
+  scoreElement.textContent = `Punteggio: ${score}`; // aggiungo punteggio in pagina
+}
+
+
+
+
 
 /*Il computer deve generare 16 numeri casuali nello stesso range della difficoltà prescelta: le bombe. Attenzione: **nella stessa cella può essere posizionata al massimo una bomba, perciò nell’array delle bombe non potranno esserci due numeri uguali.
 In seguito l'utente clicca su una cella: se il numero è presente nella lista dei numeri generati - abbiamo calpestato una bomba - la cella si colora di rosso e la partita termina. Altrimenti la cella cliccata si colora di azzurro e l'utente può continuare a cliccare sulle altre celle.
